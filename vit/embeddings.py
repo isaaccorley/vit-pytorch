@@ -7,7 +7,7 @@ from einops.layers.torch import Rearrange
 
 class PatchEmbeddings(nn.Module):
     """
-    Intuitive module that extracts patches and projects them
+    Module that extracts patches and projects them
     """
     def __init__(
         self,
