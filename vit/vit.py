@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from einops.layers.torch import Rearrange
 
 from vit.embeddings import (
     PatchEmbeddings,
@@ -91,3 +92,70 @@ class ViT(nn.Module):
         x = self.transformer(x)
         x = self.pool(x)
         return self.classifier(x)
+
+
+class ViTSimple(nn.Module):
+    """
+    Self contained implementation of ViT
+    Note: Uses PyTorch implementation of TransformerEncoder
+    """
+    def __init__(
+        self,
+        image_size: int = 256,
+        channels: int = 3,
+        num_classes: int = 10,
+        patch_size: int = 32,
+        emb_dim: int = 256,
+        num_heads: int = 16,
+        num_layers: int = 8,
+        pool: str = "mean"
+    ):
+        super().__init__()
+        self.pool = pool
+        patch_dim = channels * patch_size ** 2
+        num_patches = (image_size // patch_size) ** 2
+
+        # Embeddings
+        self.patch_embeddings = nn.Sequential(
+            Rearrange("b c (h p1) (w p2) -> b (h w) c p1 p2", p1=patch_size, p2=patch_size),
+            nn.Flatten(start_dim=2),
+            nn.Linear(patch_dim, emb_dim)
+        )
+        self.cls_token = nn.Parameter(torch.randn(1, 1, emb_dim))
+        self.pos = nn.Parameter(torch.randn(num_patches+1, emb_dim))
+
+        # Transformer
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=emb_dim,
+            nhead=num_heads,
+            activation="gelu"
+        )
+        self.transformer = nn.TransformerEncoder(
+            encoder_layer,
+            num_layers=num_layers
+        )
+
+        # Classifier
+        self.classifier = nn.Sequential(
+            nn.LayerNorm(emb_dim),
+            nn.Linear(emb_dim, num_classes)
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        
+        b = x.shape[0]
+
+        # Embeddings
+        x = self.patch_embeddings(x)
+        cls_tokens = self.cls_token.repeat(b, 1, 1)
+        x = torch.cat([cls_tokens, x], dim=1)
+        x += self.pos
+
+        # Transformer
+        x = self.transformer(x)
+
+        # Classify
+        x = x.mean(dim=1) if self.pool == "mean" else x[:, 0]
+        x = self.classifier(x)
+
+        return x

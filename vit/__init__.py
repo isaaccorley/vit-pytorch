@@ -1,1 +1,1 @@
-from .vit import ViT
+from .vit import ViT, ViTSimple

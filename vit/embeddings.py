@@ -36,7 +36,7 @@ class PatchEmbeddings(nn.Module):
         return x
 
 
-class PatchEmbeddingEfficient(nn.Module):
+class PatchEmbeddingsEfficient(nn.Module):
     """
     More efficient patch embeddings using conv layer
     """
