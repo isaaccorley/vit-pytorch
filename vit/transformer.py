@@ -2,7 +2,32 @@ import torch
 import torch.nn as nn
 
 
+
+class Attention(nn.Module):
+    def __init__(
+        self,
+    ):
+        super().__init__()
+
+
+class FeedForward(nn.Module):
+    def __init__(
+        self,
+        dim: int,
+        hidden_dim: int,
+    ):
+        super().__init__()
+        self.model = nn.Sequential()
+
+
 class TransformerEncoder(nn.Module):
+    def __init__(
+        self,
+    ):
+        super().__init__()
+
+
+class TransformerEncoderSimple(nn.Module):
 
     def __init__(
         self,

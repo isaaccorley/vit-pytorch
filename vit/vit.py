@@ -6,7 +6,10 @@ from vit.embeddings import (
     CLSToken,
     PositionalEmbeddings
 )
-from vit.transformer import TransformerEncoder
+from vit.transformer import (
+    TransformerEncoder,
+    TransformerEncoderSimple
+)
 
 
 
@@ -72,7 +75,7 @@ class ViT(nn.Module):
             num_pos=num_patches + 1, # +1 for cls token
             dim=emb_dim
         )
-        self.transformer = TransformerEncoder(
+        self.transformer = TransformerEncoderSimple(
             dim=emb_dim,
             num_heads=num_heads,
             num_layers=num_layers,
