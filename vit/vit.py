@@ -8,8 +8,8 @@ from vit.embeddings import (
     PositionalEmbeddings
 )
 from vit.transformer import (
-    TransformerEncoder,
-    TransformerEncoderSimple
+    Transformer,
+    TransformerSimple
 )
 
 
@@ -59,8 +59,10 @@ class ViT(nn.Module):
         num_classes: int = 10,
         patch_size: int = 32,
         emb_dim: int = 256,
-        num_heads: int = 16,
         num_layers: int = 8,
+        num_heads: int = 16,
+        head_dim: int = 128,
+        hidden_dim: int = 128,
         pool: str = "mean"
     ):
         super().__init__()
@@ -76,10 +78,12 @@ class ViT(nn.Module):
             num_pos=num_patches + 1, # +1 for cls token
             dim=emb_dim
         )
-        self.transformer = TransformerEncoderSimple(
+        self.transformer = Transformer(
             dim=emb_dim,
-            num_heads=num_heads,
             num_layers=num_layers,
+            num_heads=num_heads,
+            head_dim=head_dim,
+            hidden_dim=hidden_dim
         )
         self.pool = Pooling(pool=pool)
         self.classifier = Classifier(dim=emb_dim, num_classes=num_classes)
@@ -106,8 +110,10 @@ class ViTSimple(nn.Module):
         num_classes: int = 10,
         patch_size: int = 32,
         emb_dim: int = 256,
-        num_heads: int = 16,
         num_layers: int = 8,
+        num_heads: int = 16,
+        head_dim: int = 128,
+        hidden_dim: int = 512,
         pool: str = "mean"
     ):
         super().__init__()
@@ -128,6 +134,7 @@ class ViTSimple(nn.Module):
         encoder_layer = nn.TransformerEncoderLayer(
             d_model=emb_dim,
             nhead=num_heads,
+            dim_feedforward=hidden_dim,
             activation="gelu"
         )
         self.transformer = nn.TransformerEncoder(
